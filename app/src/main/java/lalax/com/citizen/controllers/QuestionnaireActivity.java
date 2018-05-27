@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Random;
 
 import lalax.com.citizen.R;
+import lalax.com.citizen.models.DatabaseHelper;
 import lalax.com.citizen.models.Problem;
 import lalax.com.citizen.models.ProblemDatabase;
 import lalax.com.citizen.models.ProblemSelector;
@@ -35,8 +36,14 @@ public class QuestionnaireActivity extends AppCompatActivity {
     //Button to navigate to next Question
     private Button nextQuestionButton;
 
+    //Button to Finish and log final score
+    private Button FinishButton;
+
     // Shows current progress out of 100 questions
     private ProgressBar progressBar;
+
+    // Created SQLite database object
+    DatabaseHelper mDatabaseHelper;
 
 
     private int answeredCorrectly = 0;
@@ -50,6 +57,10 @@ public class QuestionnaireActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        mDatabaseHelper = new DatabaseHelper(this);
+
+
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_questionnaire);
 
@@ -66,7 +77,9 @@ public class QuestionnaireActivity extends AppCompatActivity {
         bOptionButton = (Button) findViewById(R.id.b_option_button);
         cOptionButton = (Button) findViewById(R.id.c_option_button);
         dOptionButton = (Button) findViewById(R.id.d_option_button);
+
         nextQuestionButton = (Button) findViewById(R.id.next_question_button);
+        FinishButton = (Button) findViewById(R.id.finish_button);
 
         updateQuestion();
 
@@ -179,8 +192,35 @@ public class QuestionnaireActivity extends AppCompatActivity {
             }
         });
 
+        // When clicked final score is stored in the SQLite database
+        FinishButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
+                String newEntry = answeredCorrectly + " / " + currentQuestion;
+                if (newEntry.length() != 0){
+                    AddData(newEntry);
+                } else {
+                    toastMessage("You must put something in the text field!");
 
+                  }
+            }
+        });
+
+    }
+
+    public void AddData(String newEntry){
+        boolean insertData = mDatabaseHelper.addData(newEntry);
+
+        if(insertData){
+            toastMessage("Data Successfully inserted!");
+        } else {
+            toastMessage("Something went wrong");
+        }
+    }
+
+    private void toastMessage(String message){
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
 
     private void updateQuestion(){
@@ -270,6 +310,8 @@ public class QuestionnaireActivity extends AppCompatActivity {
          * total questions answered*/
         //MyApp appScore = ((MyApp)getApplicationContext());
         //appScore.setScore("" + answeredCorrectly + " / " + currentQuestion);
+
+
 
         
 
